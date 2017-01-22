@@ -1,0 +1,410 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+#include <string.h>
+
+typedef struct tablica
+{
+	void **elementy;
+	struct tablica *nastepna;
+}tablica;
+
+typedef struct lista
+{
+	int dlugosc;
+	struct tablica *poczatek;
+}lista;
+
+lista* nowa_lista()
+{
+	lista *l = malloc(sizeof(lista));
+	l->poczatek = (tablica*)malloc(sizeof(tablica));
+	l->poczatek->elementy = (void**)malloc(sizeof(void*) * 3);
+	l->poczatek->nastepna = NULL;
+	l->dlugosc = 0;
+	return l;
+}
+
+void dodaj(lista *l, void *e)
+{
+	int tab = l->dlugosc / 3;
+	int off = l->dlugosc - tab * 3;
+	tablica *c = l->poczatek;
+	int j;
+	for(j = 0; j < tab; ++j)
+	{
+		if(NULL == c->nastepna)
+		{
+			c->nastepna = (tablica*)malloc(sizeof(tablica));
+			c->nastepna->elementy = (void**)malloc(sizeof(void*) * 3);
+			c->nastepna->nastepna = NULL;
+		}
+		c = c->nastepna;
+	}
+	c->elementy[off] = e;
+	/*if(2 < l->dlugosc)
+	{
+		l->poczatek->nastepna = (tablica*)malloc(sizeof(tablica));
+		l->poczatek->nastepna->elementy = (void**)malloc(sizeof(void*) * 3);
+		l->poczatek->nastepna->elementy[l->dlugosc - 3] = e;
+	}
+	else
+	{
+		l->poczatek->elementy[l->dlugosc] = e;
+	}*/
+	++l->dlugosc;
+}
+
+void* wez(lista *l, int i)
+{
+	/*if(i >= (l->dlugosc-1))
+	{
+		return l->poczatek->nastepna->elementy[i-3];
+	}
+	else
+	{
+		return l->poczatek->elementy[i];
+	}*/
+	int tab = i / 3;
+	int off = i - (tab * 3);
+	tablica *c = l->poczatek;
+	int j;
+	for(j = 0; j < tab; ++j)
+	{
+		c = c->nastepna;
+	}
+	return c->elementy[off];
+}
+
+void** tablicy(lista *l)
+{
+	void** t = (void**)malloc(sizeof(void**) * l->dlugosc);
+	int tab = l->dlugosc / 3;
+	int off = l->dlugosc - (tab * 3);
+	if(off > 0)
+	{
+		++tab;
+	}
+	tablica *c = l->poczatek;
+	int j;
+	for(j = 0; j < tab; ++j)
+	{
+		int k;
+		int d = 3;
+		if(j == (tab))
+		{
+			d = off;
+		}
+		for(k = 0; k < d; ++k)
+		{
+			t[j * 3 + k] = c->elementy[k];
+		}
+		c = c->nastepna;
+	}
+	return t;
+}
+
+float los(float min, float max)
+{
+	srand(time(NULL));
+	return rand() / RAND_MAX * (max - min) + min;
+}
+
+float*** neuro(float *L, int in, float **X)
+{
+	
+	int lc = 2;
+	int ec = 1000;
+	int sc = 150;
+	float a = 0.2f;
+	int *I = malloc(sizeof(int) * lc);
+	*(I + 0) = in + 1;
+    int l;
+	for(l = 1; l < lc; ++l)
+	{
+		*(I + l) = *(L + l - 1) + 1;
+	}
+	float ***w = malloc(sizeof(float**) * lc);
+	for(l = 0; l < lc; ++l)
+	{
+		*(w + l) = malloc(sizeof(float*) * *(L + l));
+		int n;
+		for(n = 0; n < *(L + l); ++n)
+		{
+			*(*(w + l) + n) = malloc(sizeof(float) * *(I + l));
+			int i;
+			for(i = 0; i < *(I + l); ++i)
+			{
+				*(*(*(w + l) + n) + i) = los(0.2, 0.8);
+			}
+		}
+	}
+	
+	float **S = malloc(sizeof(float*) * lc);
+	float **Y = malloc(sizeof(float*) * lc);
+	float **FP = malloc(sizeof(float*) * lc);
+	float **D = malloc(sizeof(float*) * lc);
+	int i;
+	for(i = 0; i < lc; ++i)
+	{
+		*(S + i) = malloc(sizeof(float) * *(L + i));
+		*(Y + i) = malloc(sizeof(float) * *(L + i));
+		*(FP + i) = malloc(sizeof(float) * *(L + i));
+		*(D + i) = malloc(sizeof(float) * *(L + i));
+	}
+	
+	int e;
+	for(e = 0; e < ec; ++e)
+	{
+		int r;
+		for(r = 0; r < sc; ++r)
+		{
+			int temp = *I - 1;
+			int n = 0;
+			for(n = 0; n < *(L + 0); ++n)
+			{
+				*(*S + n) = *(*(*w + n) + *(I + 0));
+				int i;
+				for(i = 0; i < temp; ++i)
+				{
+					*(*S + n) = *(*S + n) + *(*(*w + n) + i) * *(*(X + r) + i);
+				}
+				*(*Y + n) = (1 / (1 + exp(-*(*(S + 0) + n))));
+			}
+			
+			int l;
+			for(l = 1; l < lc; ++l)
+			{
+				int temp = l - 1;
+				int temp2 = *(I + l) - 1;
+				int n = 0;
+				for(n = 0; n < *(L + l); ++n)
+				{
+					*(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l));
+					int i;
+					for(i = 0; i < temp2; ++i)
+					{
+						*(*(S + l) + n) = *(*(S + l) + n) + *(*(*(w + l) + n) + i) * *(*(Y + temp) + i);
+					}
+					*(*(Y + l) + n) = (1 / (1 + exp(-*(*(S + l) + n))));
+				}
+			}
+			
+			temp = *(I + 0) - 1;
+			for(n = 0; n < *(L + lc - 1); ++n)
+			{
+				*(*(FP + lc - 1) + n) = *(*(Y + lc - 1) + n) * (1 - *(*(Y + lc - 1) + n));
+				float temp2 = *(*(X + r) + temp + n) - *(*(Y + lc - 1) + n);
+				*(*(D + lc - 1) + n) = temp2 + *(*(FP + lc - 1) + n);
+			}
+			
+			for(l = lc - 2; l > -1; --l)
+			{
+				int temp = l + 1;
+				float SD = 0;
+				for(n = 0; n < *(L + temp); ++n)
+				{
+					SD = SD + *(*(D + temp) + n) * *(*(*(w + temp) + n) + i);
+				}
+				for(n = 0; n < *(L + lc - 1); ++n)
+				{
+					*(*(FP + l) + n) = *(*(Y + l) + n) * (1 - *(*(Y + l) + n));
+					*(*(D + l) + n) = SD + *(*(FP + l) + n);
+				}
+			}
+			
+			for(l = lc -1; l > 0; --l)
+			{
+				int temp = l - 1;
+				int temp2 = *(I + l) - 1;
+				for(n = 0; n < *(L + l); ++n)
+				{
+					for(i = 0; i < temp2; ++i)
+					{
+						*(*(*(w + l) + n) + i) = *(*(*(w + l) + n) + i) + a * *(*(D + l) + n) * *(*(Y + temp) + i);
+					}
+					*(*(*(w + l) + n) + *(I + l)) = *(*(*(w + l) + n) + *(I + l)) + a * *(*(D + l) + n);
+				}
+			}
+			
+			temp = *(I + 0) - 1;
+			for(n = 0; n < *(L + 0); ++n)
+			{
+				for(i = 0; i < temp; ++i)
+				{
+					*(*(*(w + 0) + n) + i) = *(*(*(w + 0) + n) + i) + a * *(*(D + 0) + n) * *(*(X + r) + i);
+				}
+				*(*(*(w + 0) + n) + *(I + 0)) = *(*(*(w + 0) + n) + *(I + 0)) + a * *(*(D + 0) + n);
+			}
+		}
+	}
+	
+	for(i = 0; i < lc; ++i)
+	{
+		free(*(S + i));
+		free(*(Y + i));
+		free(*(FP + i));
+		free(*(D + i));
+	}
+
+	free(D);
+	free(FP);
+	free(Y);
+	free(S);
+	free(I);
+	
+	return w;
+	
+}
+
+float** sprawdz(float *L, int in, float ***w, float **X)
+{
+	int lc = 2;
+	int sc = 150;
+	float a = 0.2f;
+	int *I = malloc(sizeof(int) * lc);
+	*(I + 0) = in + 1;
+    int l;
+	for(l = 1; l < lc; ++l)
+	{
+		*(I + l) = *(L + l - 1) + 1;
+	}
+	float **S = malloc(sizeof(float*) * lc);
+	float **Y = malloc(sizeof(float*) * lc);
+	int i;
+	for(i = 0; i < lc; ++i)
+	{
+		*(S + i) = malloc(sizeof(float) * *(L + i));
+		*(Y + i) = malloc(sizeof(float) * *(L + i));
+	}
+	
+	float **E = malloc(sizeof(float*) * sc);
+	for(i = 0; i < sc; ++i)
+	{
+		E[i] = malloc(sizeof(float) * 3);
+	}
+	
+	int r;
+	for(r = 0; r < sc; ++r)
+	{
+		int temp = *I - 1;
+		int n = 0;
+		for(n = 0; n < *(L + 0); ++n)
+		{
+			*(*S + n) = *(*(*w + n) + *(I + 0));
+			int i;
+			for(i = 0; i < temp; ++i)
+			{
+				*(*S + n) = *(*S + n) + *(*(*w + n) + i) * *(*(X + r) + i);
+			}
+			*(*Y + n) = (1 / (1 + exp(-*(*(S + 0) + n))));
+		}
+		
+		int l;
+		for(l = 1; l < lc; ++l)
+		{
+			int temp = l - 1;
+			int temp2 = *(I + l) - 1;
+			int n = 0;
+			for(n = 0; n < *(L + l); ++n)
+			{
+				*(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l));
+				int i;
+				for(i = 0; i < temp2; ++i)
+				{
+					*(*(S + l) + n) = *(*(S + l) + n) + *(*(*(w + l) + n) + i) * *(*(Y + temp) + i);
+				}
+				*(*(Y + l) + n) = (1 / (1 + exp(-*(*(S + l) + n))));
+			}
+		}
+		
+		E[r][0] = Y[lc - 1][0];
+		E[r][1] = Y[lc - 1][1];
+		E[r][2] = Y[lc - 1][2];
+		
+	}
+	
+	for(i = 0; i < lc; ++i)
+	{
+		free(*(S + i));
+	}
+	
+	free(S);
+	free(I);
+	return E;
+}
+
+int main()
+{
+    
+	FILE *plik = fopen("iris.csv", "r");
+	fseek(plik, 0, SEEK_END);
+	int rozmiar = ftell(plik);
+	fseek(plik, 0, SEEK_SET);
+	char *zawartosc = malloc(rozmiar);
+	fread(zawartosc, 1, rozmiar, plik);
+	fclose(plik);
+	
+	float **X = malloc(sizeof(float*) * 150);
+    int i;
+    for(i = 0; i< 150; ++i)
+    {
+        *(X + i) = malloc(sizeof(float) * 7);
+    }
+	
+	char *tet = strtok(zawartosc, ",\n");
+	i = 0;
+	while(NULL != tet)
+	{
+		*(*(X + i) + 0) = atof(tet);
+		*(*(X + i) + 1) = atof(strtok(NULL, ",\n"));
+		*(*(X + i) + 2) = atof(strtok(NULL, ",\n"));
+		*(*(X + i) + 3) = atof(strtok(NULL, ",\n"));
+		*(*(X + i) + 4) = atof(strtok(NULL, ",\n"));
+		*(*(X + i) + 5) = atof(strtok(NULL, ",\n"));
+		*(*(X + i) + 6) = atof(strtok(NULL, ",\n"));
+		tet = strtok(NULL, ",\n");
+		++i;
+	}
+	free(zawartosc);
+	
+	float *L = malloc(sizeof(float) * 2);
+	*(L + 0) = 4;
+	*(L + 1) = 3;
+	
+	float ***net = neuro(L, 4, X);
+	float **spr = sprawdz(L, 4, net, X);
+	
+	printf("wynik: %f\n", spr[90][1]);
+	
+	int l;
+	for(l = 0; l < 2; ++l)
+	{
+		printf("l=%d\n", l);
+		int n;
+		for(n = 0; n < *(L + l); ++n)
+		{
+			printf("n=%d\n", n);
+			free(*(*(net + l) + n));
+		}
+		free(*(net + l));
+	}
+	free(net);
+	
+	for(i = 0; i < 2; ++i)
+	{
+		free(*(spr + i));
+	}
+	free(spr);	
+	
+	lista *list = nowa_lista();
+	dodaj(list, "jeden");
+	//dodaj(list, "dwa");
+	//dodaj(list, "trzy");
+	//dodaj(list, "cztery");
+	printf((char*)wez(list, 0));
+	
+    return 0;
+    
+}
