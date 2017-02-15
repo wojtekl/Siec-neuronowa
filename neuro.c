@@ -9,15 +9,15 @@ float*** neuro(float *L, int in, float **X)
 {
 	
 	int lc = 2;
-	int ec = 1000;
+	int ec = 10;
 	int sc = 150;
 	float a = 0.2f;
 	int *I = malloc(sizeof(int) * lc);
-	*(I + 0) = in + 1;
+	*(I + 0) = in;
     int l;
 	for(l = 1; l < lc; ++l)
 	{
-		*(I + l) = *(L + l - 1) + 1;
+		*(I + l) = *(L + l - 1);
 	}
 	float ***w = malloc(sizeof(float**) * lc);
 	for(l = 0; l < lc; ++l)
@@ -30,6 +30,7 @@ float*** neuro(float *L, int in, float **X)
 			int i;
 			for(i = 0; i < *(I + l); ++i)
 			{
+                
 				*(*(*(w + l) + n) + i) = los(0.05, 0.95);
 			}
 		}
@@ -54,11 +55,12 @@ float*** neuro(float *L, int in, float **X)
 		int r;
 		for(r = 0; r < sc; ++r)
 		{
-			int temp = *I - 1;
+
+			int temp = *(I + 0);
 			int n = 0;
 			for(n = 0; n < *(L + 0); ++n)
 			{
-				*(*(S + 0) + n) = *(*(*(w + 0) + n) + *(I + 0));
+				/* *(*(S + 0) + n) = *(*(*(w + 0) + n) + *(I + 0)); */
 				int i;
 				for(i = 0; i < temp; ++i)
 				{
@@ -70,22 +72,22 @@ float*** neuro(float *L, int in, float **X)
 			int l;
 			for(l = 1; l < lc; ++l)
 			{
-				int temp = l - 1;
-				int temp2 = *(I + l) - 1;
+				int popWar = l - 1;
+				int temp2 = *(I + l);
 				int n = 0;
 				for(n = 0; n < *(L + l); ++n)
 				{
-					*(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l));
+					/* *(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l)); */
 					int i;
 					for(i = 0; i < temp2; ++i)
 					{
-						*(*(S + l) + n) = *(*(S + l) + n) + *(*(*(w + l) + n) + i) * *(*(Y + temp) + i);
+						*(*(S + l) + n) = *(*(S + l) + n) + *(*(*(w + l) + n) + i) * *(*(Y + popWar) + i);
 					}
 					*(*(Y + l) + n) = (1.0f / (1.0f + exp(-*(*(S + l) + n))));
 				}
 			}
 			
-			temp = *(I + 0) - 1;
+			temp = *(I + 0);
 			for(n = 0; n < *(L + lc - 1); ++n)
 			{
 				*(*(FP + lc - 1) + n) = *(*(Y + lc - 1) + n) * (1.0f - *(*(Y + lc - 1) + n));
@@ -150,7 +152,6 @@ float*** neuro(float *L, int in, float **X)
 	free(Y);
 	free(S);
 	free(I);
-	
 	return w;
 	
 }
@@ -160,11 +161,11 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 	int lc = 2;
 	int sc = 150;
 	int *I = malloc(sizeof(int) * lc);
-	*(I + 0) = in + 1;
+	*(I + 0) = in;
     int l;
 	for(l = 1; l < lc; ++l)
 	{
-		*(I + l) = *(L + l - 1) + 1;
+		*(I + l) = *(L + l - 1);
 	}
 	float **S = malloc(sizeof(float*) * lc);
 	float **Y = malloc(sizeof(float*) * lc);
@@ -184,11 +185,11 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 	int r;
 	for(r = 0; r < sc; ++r)
 	{
-		int temp = *(I + 0) - 1;
+		int temp = *(I + 0);
 		int n = 0;
 		for(n = 0; n < *(L + 0); ++n)
 		{
-			*(*(S + 0) + n) = *(*(*(w + 0) + n) + *(I + 0));
+			/* *(*(S + 0) + n) = *(*(*(w + 0) + n) + *(I + 0)); */
 			int i;
 			for(i = 0; i < temp; ++i)
 			{
@@ -201,11 +202,11 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 		for(l = 1; l < lc; ++l)
 		{
 			int temp = l - 1;
-			int temp2 = *(I + l) - 1;
+			int temp2 = *(I + l);
 			int n = 0;
 			for(n = 0; n < *(L + l); ++n)
 			{
-				*(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l));
+				/* *(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l)); */
 				int i;
 				for(i = 0; i < temp2; ++i)
 				{
@@ -272,9 +273,9 @@ int main()
 	float ***net = neuro(L, 4, X);
 	float **spr = sprawdz(L, 4, net, X);
 	
-	printf("wynik: %f\n", spr[2][2]);
+	printf("wynik: %f\n", spr[2][0]);
 	printf("wynik: %f\n", spr[148][1]);
-	printf("wynik: %f\n", spr[33][0]);
+	printf("wynik: %f\n", spr[33][2]);
 	
 	int l;
 	for(l = 0; l < 2; ++l)
