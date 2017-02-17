@@ -9,7 +9,7 @@ float*** neuro(float *L, int in, float **X)
 {
 	
 	int lc = 2;
-	int ec = 10;
+	int ec = 10000;
 	int sc = 150;
 	float a = 0.2f;
 	int *I = malloc(sizeof(int) * lc);
@@ -60,7 +60,7 @@ float*** neuro(float *L, int in, float **X)
 			int n = 0;
 			for(n = 0; n < *(L + 0); ++n)
 			{
-				/* *(*(S + 0) + n) = *(*(*(w + 0) + n) + *(I + 0)); */
+				*(*(S + 0) + n) = 0.0f; /**(*(*(w + 0) + n) + *(I + 0)); */
 				int i;
 				for(i = 0; i < temp; ++i)
 				{
@@ -77,7 +77,7 @@ float*** neuro(float *L, int in, float **X)
 				int n = 0;
 				for(n = 0; n < *(L + l); ++n)
 				{
-					/* *(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l)); */
+					*(*(S + l) + n) = 0.0f; /**(*(*(w + l) + n) + *(I + l)); */
 					int i;
 					for(i = 0; i < temp2; ++i)
 					{
@@ -116,25 +116,25 @@ float*** neuro(float *L, int in, float **X)
 			for(l = lc -1; l > 0; --l)
 			{
 				int temp = l - 1;
-				int temp2 = *(I + l) - 1;
+				int temp2 = *(I + l);
 				for(n = 0; n < *(L + l); ++n)
 				{
 					for(i = 0; i < temp2; ++i)
 					{
 						*(*(*(w + l) + n) + i) = *(*(*(w + l) + n) + i) + a * *(*(D + l) + n) * *(*(Y + temp) + i);
 					}
-					*(*(*(w + l) + n) + *(I + l)) = *(*(*(w + l) + n) + *(I + l)) + a * *(*(D + l) + n);
+					/* *(*(*(w + l) + n) + *(I + l)) = *(*(*(w + l) + n) + *(I + l)) + a * *(*(D + l) + n); */
 				}
 			}
 			
-			temp = *(I + 0) - 1;
+			temp = *(I + 0);
 			for(n = 0; n < *(L + 0); ++n)
 			{
 				for(i = 0; i < temp; ++i)
 				{
 					*(*(*(w + 0) + n) + i) = *(*(*(w + 0) + n) + i) + a * *(*(D + 0) + n) * *(*(X + r) + i);
 				}
-				*(*(*(w + 0) + n) + *(I + 0)) = *(*(*(w + 0) + n) + *(I + 0)) + a * *(*(D + 0) + n);
+				/* *(*(*(w + 0) + n) + *(I + 0)) = *(*(*(w + 0) + n) + *(I + 0)) + a * *(*(D + 0) + n); */
 			}
 		}
 	}
@@ -179,7 +179,8 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 	float **E = malloc(sizeof(float*) * sc);
 	for(i = 0; i < sc; ++i)
 	{
-		E[i] = malloc(sizeof(float) * 3);
+		/*E[i] = malloc(sizeof(float) * 3);*/
+        *(E + i) = malloc(sizeof(float) * 3);
 	}
 	
 	int r;
@@ -189,7 +190,7 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 		int n = 0;
 		for(n = 0; n < *(L + 0); ++n)
 		{
-			/* *(*(S + 0) + n) = *(*(*(w + 0) + n) + *(I + 0)); */
+			*(*(S + 0) + n) = 0.0f; /**(*(*(w + 0) + n) + *(I + 0)); */
 			int i;
 			for(i = 0; i < temp; ++i)
 			{
@@ -206,7 +207,7 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 			int n = 0;
 			for(n = 0; n < *(L + l); ++n)
 			{
-				/* *(*(S + l) + n) = *(*(*(w + l) + n) + *(I + l)); */
+				*(*(S + l) + n) = 0.0f; /**(*(*(w + l) + n) + *(I + l)); */
 				int i;
 				for(i = 0; i < temp2; ++i)
 				{
@@ -216,9 +217,13 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 			}
 		}
 		
-		E[r][0] = Y[lc - 1][0];
+		/*E[r][0] = Y[lc - 1][0];
 		E[r][1] = Y[lc - 1][1];
-		E[r][2] = Y[lc - 1][2];
+		E[r][2] = Y[lc - 1][2];*/
+        
+        *(*(E + r) + 0) = *(*(Y + lc - 1) + 0);
+        *(*(E + r) + 1) = *(*(Y + lc - 1) + 1);
+        *(*(E + r) + 2) = *(*(Y + lc - 1) + 2);
 		
 	}
 	
@@ -234,6 +239,8 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 
 int main()
 {
+
+    srand(time(NULL));
     
 	FILE *plik = fopen("iris.csv", "r");
 	fseek(plik, 0, SEEK_END);
@@ -273,9 +280,9 @@ int main()
 	float ***net = neuro(L, 4, X);
 	float **spr = sprawdz(L, 4, net, X);
 	
-	printf("wynik: %f\n", spr[2][0]);
-	printf("wynik: %f\n", spr[148][1]);
-	printf("wynik: %f\n", spr[33][2]);
+	printf("wynik: %f\n", *(*(spr + 149) + 0));
+	printf("wynik: %f\n", *(*(spr + 149) + 1));
+	printf("wynik: %f\n", *(*(spr + 149) + 2));
 	
 	int l;
 	for(l = 0; l < 2; ++l)

@@ -101,6 +101,7 @@ void** tablicy(lista *l)
 
 float los(float min, float max)
 {
-	srand(time(NULL));
-	return rand() / RAND_MAX * (max - min) + min;
+	/* srand(time(NULL)); */
+    float losowa = rand();
+	return losowa / RAND_MAX * (max - min) + min;
 }
