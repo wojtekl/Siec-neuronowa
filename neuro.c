@@ -31,7 +31,7 @@ float*** neuro(float *L, int in, float **X)
 			for(i = 0; i < *(I + l); ++i)
 			{
                 
-				*(*(*(w + l) + n) + i) = los(0.05, 0.95);
+				*(*(*(w + l) + n) + i) = los(0.15, 0.85);
 			}
 		}
 	}
@@ -217,13 +217,15 @@ float** sprawdz(float *L, int in, float ***w, float **X)
 			}
 		}
 		
-		/*E[r][0] = Y[lc - 1][0];
+		E[r][0] = Y[lc - 1][0];
 		E[r][1] = Y[lc - 1][1];
-		E[r][2] = Y[lc - 1][2];*/
+		E[r][2] = Y[lc - 1][2];
         
-        *(*(E + r) + 0) = *(*(Y + lc - 1) + 0);
+        /**(*(E + r) + 0) = *(*(Y + lc - 1) + 0);
         *(*(E + r) + 1) = *(*(Y + lc - 1) + 1);
-        *(*(E + r) + 2) = *(*(Y + lc - 1) + 2);
+        *(*(E + r) + 2) = *(*(Y + lc - 1) + 2);*/
+
+        printf("%f , %f, %f\n" ,*(*(Y + lc - 1) + 0), *(*(Y + lc - 1) + 1), *(*(Y + lc - 1) + 2));
 		
 	}
 	
@@ -280,9 +282,9 @@ int main()
 	float ***net = neuro(L, 4, X);
 	float **spr = sprawdz(L, 4, net, X);
 	
-	printf("wynik: %f\n", *(*(spr + 149) + 0));
-	printf("wynik: %f\n", *(*(spr + 149) + 1));
-	printf("wynik: %f\n", *(*(spr + 149) + 2));
+	printf("wynik: %f\n", *(*(spr + 148) + 0));
+	printf("wynik: %f\n", *(*(spr + 148) + 1));
+	printf("wynik: %f\n", *(*(spr + 148) + 2));
 	
 	int l;
 	for(l = 0; l < 2; ++l)
@@ -300,7 +302,7 @@ int main()
 	{
 		free(*(spr + i));
 	}
-	free(spr);	
+	free(spr);
 	
 	/*lista *list = nowa_lista();
 	dodaj(list, "jeden");
