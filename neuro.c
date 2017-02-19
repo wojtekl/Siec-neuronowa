@@ -9,19 +9,19 @@ float*** neuro(int *L, int in, float **X)
 {
   int rozDanych = sizeof(float);
   int rozWskaz = sizeof(void*);
-  int lc = 2;
+  int liczWar = 2;
 
   int l;
   
-  int *I = malloc(sizeof(int) * lc);
+  int *I = malloc(sizeof(int) * liczWar);
   *(I + 0) = in + 1;
-  for(l = 1; l < lc; ++l)
+  for(l = 1; l < liczWar; ++l)
   {
     *(I + l) = *(L + l - 1) + 1;
   }
   
-  float ***w = malloc(rozWskaz * lc);
-  for(l = 0; l < lc; ++l)
+  float ***w = malloc(rozWskaz * liczWar);
+  for(l = 0; l < liczWar; ++l)
   {
     int liczNer = *(L + l);
     *(w + l) = malloc(rozWskaz * liczNer);
@@ -33,16 +33,16 @@ float*** neuro(int *L, int in, float **X)
       int i;
       for(i = 0; i < liczWejs; ++i)
       {
-        *(*(*(w + l) + n) + i) = los(0.25, 0.65);
+        *(*(*(w + l) + n) + i) = los(0.05, 0.95);
       }
     }
   }
   
-  float **S = malloc(rozWskaz * lc);
-  float **Y = malloc(rozWskaz * lc);
-  float **FP = malloc(rozWskaz * lc);
-  float **D = malloc(rozWskaz * lc);
-  for(l = 0; l < lc; ++l)
+  float **S = malloc(rozWskaz * liczWar);
+  float **Y = malloc(rozWskaz * liczWar);
+  float **FP = malloc(rozWskaz * liczWar);
+  float **D = malloc(rozWskaz * liczWar);
+  for(l = 0; l < liczWar; ++l)
   {
     *(S + l) = malloc(sizeof(float) * *(L + l));
     *(Y + l) = malloc(sizeof(float) * *(L + l));
@@ -75,7 +75,7 @@ float*** neuro(int *L, int in, float **X)
       }
       
       int l = 0;
-      for(l = 1; l < lc; ++l)
+      for(l = 1; l < liczWar; ++l)
       {
         int popWar = l - 1;
         int liczWejsc = *(I + l) - 1;
@@ -93,14 +93,14 @@ float*** neuro(int *L, int in, float **X)
       }
       
       liczWejsc = *(I + 0) - 1;
-      for(n = 0; n < *(L + lc - 1); ++n)
+      for(n = 0; n < *(L + liczWar - 1); ++n)
       {
-        *(*(FP + lc - 1) + n) = *(*(Y + lc - 1) + n) * (1.0f - *(*(Y + lc - 1) + n));
-        float ggg = *(*(X + p) + liczWejsc + n) - *(*(Y + lc - 1) + n);
-        *(*(D + lc - 1) + n) = ggg * *(*(FP + lc - 1) + n);
+        *(*(FP + liczWar - 1) + n) = *(*(Y + liczWar - 1) + n) * (1.0f - *(*(Y + liczWar - 1) + n));
+        float ggg = *(*(X + p) + liczWejsc + n) - *(*(Y + liczWar - 1) + n);
+        *(*(D + liczWar - 1) + n) = ggg * *(*(FP + liczWar - 1) + n);
       }
       
-      for(l = lc - 2; l > -1; --l)
+      for(l = liczWar - 2; l > -1; --l)
       {
         int nasWar = l + 1;
         float SD = 0.0f;
@@ -119,13 +119,12 @@ float*** neuro(int *L, int in, float **X)
         }
       }
       
-      for(l = lc -1; l > 0; --l)
+      for(l = liczWar -1; l > 0; --l)
       {
         int popWar = l - 1;
         int liczWejsc = *(I + l) - 1;
         for(n = 0; n < *(L + l); ++n)
         {
-          /**(*(*(w + l) + n) + liczWejsc) = 0;*/
           int i;
           for(i = 0; i < liczWejsc; ++i)
           {
@@ -135,12 +134,12 @@ float*** neuro(int *L, int in, float **X)
         }
       }
       
-      liczWejsc = *(I + 0) - 1;
+      int tem = *(I + 0) - 1;
       for(n = 0; n < *(L + 0); ++n)
       {
-        *(*(*(w + 0) + n) + liczWejsc) = a * *(*(D + 0) + n);
+        *(*(*(w + 0) + n) + tem) = *(*(*(w + 0) + n) + liczWejsc) + a * *(*(D + 0) + n);
         int i;
-        for(i = 0; i < liczWejsc; ++i)
+        for(i = 0; i < tem; ++i)
         {
           *(*(*(w + 0) + n) + i) = *(*(*(w + 0) + n) + i) + a * *(*(D + 0) + n) * *(*(X + p) + i);
         }
@@ -148,7 +147,7 @@ float*** neuro(int *L, int in, float **X)
     }
   }
   
-  for(l = 0; l < lc; ++l)
+  for(l = 0; l < liczWar; ++l)
   {
     free(*(S + l));
     free(*(Y + l));
