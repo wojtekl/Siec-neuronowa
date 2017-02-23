@@ -33,7 +33,7 @@ float*** neuro(int *L, int in, float **X)
       int i;
       for(i = 0; i < liczWejs; ++i)
       {
-        *(*(*(w + l) + n) + i) = los(0.05, 0.95);
+        *(*(*(w + l) + n) + i) = los(0.1, 0.8);
       }
     }
   }
