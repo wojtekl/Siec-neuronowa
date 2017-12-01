@@ -1,6 +1,6 @@
 typedef struct tablica
 {
-	void **elementy;
+	void ** elementy;
 	struct tablica *nastepna;
 }tablica;
 
@@ -12,7 +12,7 @@ typedef struct lista
 
 lista* nowa_lista()
 {
-	lista *l = malloc(sizeof(lista));
+	lista * const l = malloc(sizeof(lista));
 	l->poczatek = (tablica*)malloc(sizeof(tablica));
 	l->poczatek->elementy = (void**)malloc(sizeof(void*) * 3);
 	l->poczatek->nastepna = NULL;
@@ -20,10 +20,9 @@ lista* nowa_lista()
 	return l;
 }
 
-void dodaj(lista *l, void *e)
+void dodaj(lista * const l, void * const e)
 {
-	int tab = l->dlugosc / 3;
-	int off = l->dlugosc - tab * 3;
+	const int tab = l->dlugosc / 3;
 	tablica *c = l->poczatek;
 	int j;
 	for(j = 0; j < tab; ++j)
@@ -36,6 +35,7 @@ void dodaj(lista *l, void *e)
 		}
 		c = c->nastepna;
 	}
+	const int off = l->dlugosc - tab * 3;
 	c->elementy[off] = e;
 	/*if(2 < l->dlugosc)
 	{
@@ -50,7 +50,7 @@ void dodaj(lista *l, void *e)
 	++l->dlugosc;
 }
 
-void* wez(lista *l, int i)
+void* wez(const lista * const l, const int i)
 {
 	/*if(i >= (l->dlugosc-1))
 	{
@@ -60,36 +60,36 @@ void* wez(lista *l, int i)
 	{
 		return l->poczatek->elementy[i];
 	}*/
-	int tab = i / 3;
-	int off = i - (tab * 3);
-	tablica *c = l->poczatek;
+	const int tab = i / 3;
+	const tablica *c = l->poczatek;
 	int j;
 	for(j = 0; j < tab; ++j)
 	{
 		c = c->nastepna;
 	}
+	const int off = i - (tab * 3);
 	return c->elementy[off];
 }
 
-void** tablicy(lista *l)
+void** tablicy(const lista * const l)
 {
-	void** t = (void**)malloc(sizeof(void**) * l->dlugosc);
 	int tab = l->dlugosc / 3;
-	int off = l->dlugosc - (tab * 3);
+	const int off = l->dlugosc - (tab * 3);
 	if(off > 0)
 	{
 		++tab;
 	}
-	tablica *c = l->poczatek;
+	const tablica *c = l->poczatek;
+	void ** const t = (void ** const )malloc(sizeof(void**) * l->dlugosc);
 	int j;
 	for(j = 0; j < tab; ++j)
 	{
-		int k;
 		int d = 3;
 		if(j == (tab))
 		{
 			d = off;
 		}
+		int k;
 		for(k = 0; k < d; ++k)
 		{
 			t[j * 3 + k] = c->elementy[k];
@@ -99,10 +99,10 @@ void** tablicy(lista *l)
 	return t;
 }
 
-float los(float min, float max)
+float los(const float min, const float max)
 {
 	/* srand(time(NULL)); */
     /* float losowa = rand(); */
-	return (rand() / RAND_MAX) * (max - min) + min;
+	return (float)rand() / RAND_MAX * (max - min) + min;
 }
 
