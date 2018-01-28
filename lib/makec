@@ -1,4 +1,5 @@
 #!/bin/bash
 
 wynik=$(echo $1 | sed -e "s/\..*//")
-gcc $1 -ansi -lm -o $wynik
+gcc --std=c11 --pedantic -Wall -Wextra -c $1
+

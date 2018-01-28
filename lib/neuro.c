@@ -1,16 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include "lista.c"
+#include "neuro.h"
 
-float*** neuro(const int * const L, const int in, const float * const * const X)
+float*** neuro(const int * const L, const int in, 
+  const float * const * const X)
 {
   const int rozDanych = sizeof(float);
   const int rozWskaz = sizeof(void*);
   const int liczWar = 2;
-
+  
   int l;
   
   int * const I = malloc(sizeof(int) * liczWar);
@@ -20,6 +16,7 @@ float*** neuro(const int * const L, const int in, const float * const * const X)
     *(I + l) = *(L + l - 1) + 1;
   }
   
+  srand(time(0));
   float *** const w = malloc(rozWskaz * liczWar);
   for(l = 0; l < liczWar; ++l)
   {
@@ -61,18 +58,21 @@ float*** neuro(const int * const L, const int in, const float * const * const X)
     int p;
     for(p = 0; p < liczProbek; ++p)
     {
-      
       int n;
       
       for(n = 0; n < *(L + 0); ++n)
       {
-        *(*(S + 0) + n) = *(*(*(w + 0) + n) + liczWejsc);
+        *(*(S + 0) + n) = *(*(*(w + 0) + n) 
+          + liczWejsc);
         int i;
         for(i = 0; i < liczWejsc; ++i)
         {
-          *(*(S + 0) + n) = *(*(S + 0) + n) + *(*(*(w + 0) + n) + i) * *(*(X + p) + i);
+          *(*(S + 0) + n) = *(*(S + 0) + n) 
+            + *(*(*(w + 0) + n) + i) * *(*(X + p) 
+            + i);
         }
-        *(*(Y + 0) + n) = (1.0f / (1.0f + exp(-*(*(S + 0) + n))));
+        *(*(Y + 0) + n) = (1.0f / (1.0f + exp(
+          -*(*(S + 0) + n))));
       }
       
       int l;
@@ -84,26 +84,33 @@ float*** neuro(const int * const L, const int in, const float * const * const X)
         int n;
         for(n = 0; n < *(L + l); ++n)
         {
-          *(*(S + l) + n) = *(*(*(w + l) + n) + liczWejsc);
+          *(*(S + l) + n) = *(*(*(w + l) + n) 
+            + liczWejsc);
           int i;
           for(i = 0; i < liczWejsc; ++i)
           {
-            *(*(S + l) + n) = *(*(S + l) + n) + *(*(*(w + l) + n) + i) * *(*(Y + popWar) + i);
+            *(*(S + l) + n) = *(*(S + l) + n) 
+              + *(*(*(w + l) + n) + i) * *(*(Y 
+              + popWar) + i);
           }
-          *(*(Y + l) + n) = (1.0f / (1.0f + exp(-*(*(S + l) + n))));
+          *(*(Y + l) + n) = (1.0f / (1.0f + exp(
+            -*(*(S + l) + n))));
         }
       }
       
       for(n = 0; n < *(L + liczWar - 1); ++n)
       {
-        *(*(FP + liczWar - 1) + n) = *(*(Y + liczWar - 1) + n) * (1.0f - *(*(Y + liczWar - 1) + n));
-        const float ggg = *(*(X + p) + liczWejsc + n) - *(*(Y + liczWar - 1) + n);
-        *(*(D + liczWar - 1) + n) = ggg * *(*(FP + liczWar - 1) + n);
+        *(*(FP + liczWar - 1) + n) = *(*(Y 
+          + liczWar - 1) + n) * (1.0f - *(*(Y 
+          + liczWar - 1) + n));
+        const float ggg = *(*(X + p) + liczWejsc 
+          + n) - *(*(Y + liczWar - 1) + n);
+        *(*(D + liczWar - 1) + n) = ggg * *(*(FP 
+          + liczWar - 1) + n);
       }
       
       for(l = liczWar - 2; l > -1; --l)
       {
-        
         int n;
         
         const int nasWar = l + 1;
@@ -113,12 +120,14 @@ float*** neuro(const int * const L, const int in, const float * const * const X)
           int i;
           for(i = 0; i < *(I + nasWar); ++i)
           {
-            SD = SD + *(*(D + nasWar) + n) * *(*(*(w + nasWar) + n) + i);
+            SD = SD + *(*(D + nasWar) + n) 
+              * *(*(*(w + nasWar) + n) + i);
           }
         }
         for(n = 0; n < *(L + l); ++n)
         {
-          *(*(FP + l) + n) = *(*(Y + l) + n) * (1.0f - *(*(Y + l) + n));
+          *(*(FP + l) + n) = *(*(Y + l) + n) 
+            * (1.0f - *(*(Y + l) + n));
           *(*(D + l) + n) = SD * *(*(FP + l) + n);
         }
       }
@@ -133,20 +142,27 @@ float*** neuro(const int * const L, const int in, const float * const * const X)
           int i;
           for(i = 0; i < liczWejsc; ++i)
           {
-            *(*(*(w + l) + n) + i) = *(*(*(w + l) + n) + i) + a * *(*(D + l) + n) * *(*(Y + popWar) + i);
+            *(*(*(w + l) + n) + i) = *(*(*(w + l) 
+              + n) + i) + a * *(*(D + l) + n) 
+              * *(*(Y + popWar) + i);
           }
-          *(*(*(w + l) + n) + liczWejsc) = *(*(*(w + l) + n) + liczWejsc) + a * *(*(D + l) + n);
+          *(*(*(w + l) + n) + liczWejsc) = *(*(*(w 
+            + l) + n) + liczWejsc) + a * *(*(D 
+            + l) + n);
         }
       }
       
       const int tem = *(I + 0) - 1;
       for(n = 0; n < *(L + 0); ++n)
       {
-        *(*(*(w + 0) + n) + tem) = *(*(*(w + 0) + n) + liczWejsc) + a * *(*(D + 0) + n);
+        *(*(*(w + 0) + n) + tem) = *(*(*(w + 0) 
+          + n) + liczWejsc) + a * *(*(D + 0) + n);
         int i;
         for(i = 0; i < tem; ++i)
         {
-          *(*(*(w + 0) + n) + i) = *(*(*(w + 0) + n) + i) + a * *(*(D + 0) + n) * *(*(X + p) + i);
+          *(*(*(w + 0) + n) + i) = *(*(*(w + 0) 
+            + n) + i) + a * *(*(D + 0) + n) 
+            * *(*(X + p) + i);
         }
       }
     }
@@ -167,12 +183,12 @@ float*** neuro(const int * const L, const int in, const float * const * const X)
   free(I);
   
   return w;
-
 }
 
-float** sprawdz(const int * const L, const int in, const float * const * const * const w, const float * const * const X)
+float** sprawdz(const int * const L, const int in, 
+  const float * const * const * const w, 
+  const float * const * const X)
 {
-  
   const int liczWarstw = 2;
   int l;
   
@@ -183,20 +199,21 @@ float** sprawdz(const int * const L, const int in, const float * const * const *
     *(I + l) = *(L + l - 1) + 1;
   }
   
-  float ** const Y = malloc(sizeof(float*) * liczWarstw);
+  float ** const Y = malloc(sizeof(float*) 
+    * liczWarstw);
   for(l = 0; l < liczWarstw; ++l)
   {
     *(Y + l) = malloc(sizeof(float) * *(L + l));
   }
   
   const int liczProbek = 150;
-  float ** const E = malloc(sizeof(float*) * liczProbek);
+  float ** const E = malloc(sizeof(float*) 
+    * liczProbek);
   const int liczWejsc = *(I + 0) - 1;
   const int liczWyjsc = *(L + liczWarstw - 1);
   int p;
   for(p = 0; p < liczProbek; ++p)
   {
-    
     int n;
     
     for(n = 0; n < *(L + 0); ++n)
@@ -205,7 +222,8 @@ float** sprawdz(const int * const L, const int in, const float * const * const *
       int i;
       for(i = 0; i < liczWejsc; ++i)
       {
-        s = s + *(*(*(w + 0) + n) + i) * *(*(X + p) + i);
+        s = s + *(*(*(w + 0) + n) + i) 
+          * *(*(X + p) + i);
       }
       *(*(Y + 0) + n) = (1.0f / (1.0f + exp(-s)));
     }
@@ -222,7 +240,8 @@ float** sprawdz(const int * const L, const int in, const float * const * const *
         int i;
         for(i = 0; i < liczWejsc; ++i)
         {
-          s = s + *(*(*(w + l) + n) + i) * *(*(Y + popWar) + i);
+          s = s + *(*(*(w + l) + n) + i) * *(*(Y 
+            + popWar) + i);
         }
         *(*(Y + l) + n) = (1.0f / (1.0f + exp(-s)));
       }
@@ -236,7 +255,6 @@ float** sprawdz(const int * const L, const int in, const float * const * const *
       printf("  %f" ,*(*(E + p) + n));
     }
     printf("\n");
-  
   }
   
   for(l = 0; l < liczWarstw; ++l)
@@ -247,81 +265,11 @@ float** sprawdz(const int * const L, const int in, const float * const * const *
   free(I);
   
   return E;
-
 }
 
-int main()
+float los(const float min, const float max)
 {
-  
-  srand(time(0));
-  
-  FILE * const plik = fopen("iris.csv", "r");
-  fseek(plik, 0, SEEK_END);
-  const int rozmiar = ftell(plik);
-  fseek(plik, 0, SEEK_SET);
-  char * const zawartosc = malloc(rozmiar);
-  fread(zawartosc, 1, rozmiar, plik);
-  fclose(plik);
-  
-  float ** const X = malloc(sizeof(float*) * 150);
-  int i;
-  for(i = 0; i< 150; ++i)
-  {
-    *(X + i) = malloc(sizeof(float) * 7);
-  }
-  
-  const char *tet = strtok(zawartosc, ",\n");
-  i = 0;
-  while(NULL != tet)
-  {
-    *(*(X + i) + 0) = atof(tet);
-    *(*(X + i) + 1) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 2) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 3) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 4) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 5) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 6) = atof(strtok(NULL, ",\n"));
-    tet = strtok(NULL, ",\n");
-    ++i;
-  }
-  free(zawartosc);
-  
-  int * const L = malloc(sizeof(int) * 2);
-  *(L + 0) = 4;
-  *(L + 1) = 3;
-  
-  float *** const net = neuro(L, 4, (const float * const * const)X);
-  float ** const spr = sprawdz(L, 4, (const float * const * const * const)net, (const float * const * const)X);
-  
-  printf("wynik: %f\n", *(*(spr + 148) + 0));
-  printf("wynik: %f\n", *(*(spr + 148) + 1));
-  printf("wynik: %f\n", *(*(spr + 148) + 2));
-  
-  int l;
-  for(l = 0; l < 2; ++l)
-  {
-    int n;
-    for(n = 0; n < *(L + l); ++n)
-    {
-      free(*(*(net + l) + n));
-    }
-    free(*(net + l));
-  }
-  free(net);
-  
-  for(i = 0; i < 2; ++i)
-  {
-    free(*(spr + i));
-  }
-  free(spr);
-	
-	/*lista *list = nowa_lista();
-	dodaj(list, "jeden");
-	dodaj(list, "dwa");
-	dodaj(list, "trzy");
-	dodaj(list, "cztery");
-	printf((char*)wez(list, 0));*/
-  
-  return 0;
+	return (float)rand() / RAND_MAX * (max - min) 
+	  + min;
 }
 
