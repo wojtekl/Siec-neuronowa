@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "lib/neuro.h"
+/*#include "lib/lista.h"*/
 
 int main(const int argc, 
   const char * const * const argv)
@@ -67,12 +68,12 @@ int main(const int argc,
   }
   free(spr);
 	
-	/*lista *list = nowa_lista();
-	dodaj(list, "jeden");
-	dodaj(list, "dwa");
-	dodaj(list, "trzy");
-	dodaj(list, "cztery");
-	printf((char*)wez(list, 0));*/
+	/*lista *list = lista_nowa();
+	lista_dodaj(list, "jeden");
+	lista_dodaj(list, "dwa");
+	lista_dodaj(list, "trzy");
+	lista_dodaj(list, "cztery");
+	printf((char*)lista_wez(list, 0));*/
   
   return EXIT_SUCCESS;
 }
