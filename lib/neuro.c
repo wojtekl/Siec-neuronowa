@@ -185,86 +185,93 @@ float*** neuro(const int * const L, const int in,
   return w;
 }
 
-float** sprawdz(const int * const L, const int in, 
-  const float * const * const * const w, 
-  const float * const * const X)
+float** ssn_sprawdz(const int liczbaWarstw, 
+  const int *const warstwy, const int in, 
+  const float *const *const *const ssn, 
+  const int liczbaProbek, 
+  const float *const *const probki)
 {
-  const int liczWarstw = 2;
-  int l;
-  
-  int * const I = malloc(sizeof(int) * liczWarstw);
+  int *const I = malloc(liczbaWarstw * sizeof(int));
   *(I + 0) = in + 1;
-  for(l = 1; l < liczWarstw; ++l)
+  for(int w = 1; w < liczbaWarstw; ++w)
   {
-    *(I + l) = *(L + l - 1) + 1;
+    *(I + w) = *(warstwy + w - 1) + 1;
   }
   
-  float ** const Y = malloc(sizeof(float*) 
-    * liczWarstw);
-  for(l = 0; l < liczWarstw; ++l)
+  float * *const Y = malloc(liczbaWarstw 
+    * sizeof(float*));
+  for(int w = 0; w < liczbaWarstw; ++w)
   {
-    *(Y + l) = malloc(sizeof(float) * *(L + l));
+    *(Y + w) = malloc(*(warstwy + w) 
+      * sizeof(float));
   }
   
-  const int liczProbek = 150;
-  float ** const E = malloc(sizeof(float*) 
-    * liczProbek);
+  float * *const E = malloc(liczbaProbek 
+    * sizeof(float*));
   const int liczWejsc = *(I + 0) - 1;
-  const int liczWyjsc = *(L + liczWarstw - 1);
-  int p;
-  for(p = 0; p < liczProbek; ++p)
+  const int liczWyjsc = *(warstwy + liczbaWarstw 
+    - 1);
+  for(int p = 0; p < liczbaProbek; ++p)
   {
-    int n;
-    
-    for(n = 0; n < *(L + 0); ++n)
+    for(int n = 0; n < *(warstwy + 0); ++n)
     {
-      float s = *(*(*(w + 0) + n) + liczWejsc);
-      int i;
-      for(i = 0; i < liczWejsc; ++i)
+      float s = *(*(*(ssn + 0) + n) + liczWejsc);
+      for(int i = 0; i < liczWejsc; ++i)
       {
-        s = s + *(*(*(w + 0) + n) + i) 
-          * *(*(X + p) + i);
+        s = s + *(*(*(ssn + 0) + n) + i) 
+          * *(*(probki + p) + i);
       }
       *(*(Y + 0) + n) = (1.0f / (1.0f + exp(-s)));
     }
     
-    int l;
-    for(l = 1; l < liczWarstw; ++l)
+    for(int w = 1; w < liczbaWarstw; ++w)
     {
-      const int popWar = l - 1;
-      const int liczWejsc = *(I + l) - 1;
-      int n;
-      for(n = 0; n < *(L + l); ++n)
+      const int popWar = w - 1;
+      const int liczWejsc = *(I + w) - 1;
+      for(int n = 0; n < *(warstwy + w); ++n)
       {
-        float s = *(*(*(w + l) + n) + liczWejsc);
-        int i;
-        for(i = 0; i < liczWejsc; ++i)
+        float s = *(*(*(ssn + w) + n) + liczWejsc);
+        for(int i = 0; i < liczWejsc; ++i)
         {
-          s = s + *(*(*(w + l) + n) + i) * *(*(Y 
+          s = s + *(*(*(ssn + w) + n) + i) * *(*(Y 
             + popWar) + i);
         }
-        *(*(Y + l) + n) = (1.0f / (1.0f + exp(-s)));
+        *(*(Y + w) + n) = (1.0f / (1.0f + exp(-s)));
       }
     }
     
-    *(E + p) = malloc(sizeof(float) * liczWyjsc);
+    *(E + p) = malloc(liczWyjsc * sizeof(float));
     printf("%d.", p + 1);
-    for(n = 0; n < liczWyjsc; ++n)
+    for(int n = 0; n < liczWyjsc; ++n)
     {
-      *(*(E + p) + n) = *(*(Y + liczWarstw - 1) + n);
+      *(*(E + p) + n) = *(*(Y + liczbaWarstw - 1) + n);
       printf("  %f" ,*(*(E + p) + n));
     }
     printf("\n");
   }
   
-  for(l = 0; l < liczWarstw; ++l)
+  for(int w = 0; w < liczbaWarstw; ++w)
   {
-    free(*(Y + l));
+    free(*(Y + w));
   }
   
   free(I);
   
   return E;
+}
+
+void ssn_usun(const int liczbaWarstw, 
+  const int *const warstwy, float * * *const ssn)
+{
+  for(int w = 0; w < liczbaWarstw; ++w)
+  {
+    for(int n = 0; n < *(warstwy + w); ++n)
+    {
+      free(*(*(ssn + w) + n));
+    }
+    free(*(ssn + w));
+  }
+  free(ssn);
 }
 
 float los(const float min, const float max)

@@ -15,58 +15,56 @@ int main(const int argc,
   fread(bufor, 1, d, file);
   fclose(file);
   
-  float * * const X = malloc(150 * sizeof(float*));
-  for(int i = 0; i < 150; ++i)
+  const int liczbaProbek = 150;
+  float * *const probki = malloc(liczbaProbek 
+    * sizeof(float*));
+  for(int p = 0; p < liczbaProbek; ++p)
   {
-    *(X + i) = malloc(7 * sizeof(float));
+    *(probki + p) = malloc(7 * sizeof(float));
   }
   
   const char *wiersz = strtok(bufor, ",\n");
-  int i = 0;
+  int p = 0;
   while(NULL != wiersz)
   {
-    *(*(X + i) + 0) = atof(wiersz);
-    *(*(X + i) + 1) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 2) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 3) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 4) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 5) = atof(strtok(NULL, ",\n"));
-    *(*(X + i) + 6) = atof(strtok(NULL, ",\n"));
+    *(*(probki + p) + 0) = atof(wiersz);
+    *(*(probki + p) + 1) = atof(strtok(NULL, ",\n"));
+    *(*(probki + p) + 2) = atof(strtok(NULL, ",\n"));
+    *(*(probki + p) + 3) = atof(strtok(NULL, ",\n"));
+    *(*(probki + p) + 4) = atof(strtok(NULL, ",\n"));
+    *(*(probki + p) + 5) = atof(strtok(NULL, ",\n"));
+    *(*(probki + p) + 6) = atof(strtok(NULL, ",\n"));
     wiersz = strtok(NULL, ",\n");
-    ++i;
+    ++p;
   }
   
   free(bufor);
   
-  int * const L = malloc(2 * sizeof(int));
-  *(L + 0) = 4;
-  *(L + 1) = 3;
+  const int liczbaWarstw = 2;
+  int * const warstwy = malloc(liczbaWarstw 
+    * sizeof(int));
+  *(warstwy + 0) = 4;
+  *(warstwy + 1) = 3;
   
-  float * * * const net = neuro(L, 4, 
-    (const float * const * const)X);
-  float * * const spr = sprawdz(L, 4, 
-    (const float * const * const * const)net, 
-    (const float * const * const)X);
+  float * * *const ssn = neuro(warstwy, 4, 
+    (const float *const *const)probki);
+  float * *const wynik = ssn_sprawdz(liczbaWarstw, 
+    warstwy, 4, 
+    (const float *const *const *const)ssn, 
+    liczbaProbek, (const float *const *const)probki);
   
-  printf("wynik: %f\n", *(*(spr + 148) + 0));
-  printf("wynik: %f\n", *(*(spr + 148) + 1));
-  printf("wynik: %f\n", *(*(spr + 148) + 2));
+  printf("wynik: %f\n", *(*(wynik + 148) + 0));
+  printf("wynik: %f\n", *(*(wynik + 148) + 1));
+  printf("wynik: %f\n", *(*(wynik + 148) + 2));
   
-  for(int l = 0; l < 2; ++l)
+  ssn_usun(liczbaWarstw, warstwy, ssn);
+  
+  for(int w = 0; w < liczbaWarstw; ++w)
   {
-    for(int n = 0; n < *(L + l); ++n)
-    {
-      free(*(*(net + l) + n));
-    }
-    free(*(net + l));
+    free(*(wynik + w));
   }
-  free(net);
-  
-  for(int i = 0; i < 2; ++i)
-  {
-    free(*(spr + i));
-  }
-  free(spr);
+  free(wynik);
+  free(warstwy);
 	
 	/*lista *list = lista_nowa();
 	lista_dodaj(list, "jeden");
