@@ -1,282 +1,238 @@
 #include "neuro.h"
 
-float*** neuro(const int * const L, const int in, 
-  const float * const * const X)
+void teach_ssn(ssn s, const float * const * const X)
 {
-  const int rozDanych = sizeof(float);
-  const int rozWskaz = sizeof(void*);
-  const int liczWar = 2;
-  
-  int l;
-  
-  int * const I = malloc(sizeof(int) * liczWar);
-  *(I + 0) = in + 1;
-  for(l = 1; l < liczWar; ++l)
+  float ** const S = new_tabt(s.l);
+  float ** const Y = new_tabt(s.l);
+  float ** const FP = new_tabt(s.l);
+  float ** const D = new_tabt(s.l);
+  for(int i = 0; i < s.l; ++i)
   {
-    *(I + l) = *(L + l - 1) + 1;
-  }
-  
-  srand(time(0));
-  float *** const w = malloc(rozWskaz * liczWar);
-  for(l = 0; l < liczWar; ++l)
-  {
-    const int liczNer = *(L + l);
-    *(w + l) = malloc(rozWskaz * liczNer);
-    const int liczWejs = *(I + l);
-    int n;
-    for(n = 0; n < liczNer; ++n)
-    {
-      *(*(w + l) + n) = malloc(rozDanych * *(I + l));
-      int i;
-      for(i = 0; i < liczWejs; ++i)
-      {
-        *(*(*(w + l) + n) + i) = los(0.1, 0.9);
-      }
-    }
-  }
-  
-  float ** const S = malloc(rozWskaz * liczWar);
-  float ** const Y = malloc(rozWskaz * liczWar);
-  float ** const FP = malloc(rozWskaz * liczWar);
-  float ** const D = malloc(rozWskaz * liczWar);
-  for(l = 0; l < liczWar; ++l)
-  {
-    *(S + l) = malloc(sizeof(float) * *(L + l));
-    *(Y + l) = malloc(sizeof(float) * *(L + l));
-    *(FP + l) = malloc(sizeof(float) * *(L + l));
-    *(D + l) = malloc(sizeof(float) * *(L + l));
+    S[i] = new_tabf(s.t[i]);
+    Y[i] = new_tabf(s.t[i]);
+    FP[i] = new_tabf(s.t[i]);
+    D[i] = new_tabf(s.t[i]);
   }
   
   const int liczEpok = 10000;
   const int liczProbek = 150;
   const float a = 0.2f;
-  const int liczWejsc = *(I + 0) - 1;
+  const int liczWejsc = s.in[0] - 1;
   
-  int e;
-  for(e = 0; e < liczEpok; ++e)
+  for(int e = 0; e < liczEpok; ++e)
   {
     int p;
     for(p = 0; p < liczProbek; ++p)
     {
-      int n;
-      
-      for(n = 0; n < *(L + 0); ++n)
+      for(int n = 0; n < s.t[0]; ++n)
       {
-        *(*(S + 0) + n) = *(*(*(w + 0) + n) 
-          + liczWejsc);
+        S[0][n] = s.w[0][n][liczWejsc];
         int i;
-        for(i = 0; i < liczWejsc; ++i)
-        {
-          *(*(S + 0) + n) = *(*(S + 0) + n) 
-            + *(*(*(w + 0) + n) + i) * *(*(X + p) 
-            + i);
-        }
-        *(*(Y + 0) + n) = (1.0f / (1.0f + exp(
-          -*(*(S + 0) + n))));
+        for(i = 0; i < liczWejsc; ++i) S[0][n] = S[0][n] + s.w[0][n][i] * X[p][i];
+        Y[0][n] = ssn_aktywacja(S[0][n]);
       }
       
-      int l;
-      
-      for(l = 1; l < liczWar; ++l)
+      for(int l = 1; l < s.l; ++l)
       {
         const int popWar = l - 1;
-        const int liczWejsc = *(I + l) - 1;
+        const int liczWejsc = s.in[l] - 1;
         int n;
-        for(n = 0; n < *(L + l); ++n)
+        for(n = 0; n < s.t[l]; ++n)
         {
-          *(*(S + l) + n) = *(*(*(w + l) + n) 
-            + liczWejsc);
+          S[l][n] = s.w[l][n][liczWejsc];
           int i;
-          for(i = 0; i < liczWejsc; ++i)
-          {
-            *(*(S + l) + n) = *(*(S + l) + n) 
-              + *(*(*(w + l) + n) + i) * *(*(Y 
-              + popWar) + i);
-          }
-          *(*(Y + l) + n) = (1.0f / (1.0f + exp(
-            -*(*(S + l) + n))));
+          for(i = 0; i < liczWejsc; ++i) S[l][n] = S[l][n] + s.w[l][n][i] * Y[popWar][i];
+          Y[l][n] = ssn_aktywacja(S[l][n]);
         }
       }
       
-      for(n = 0; n < *(L + liczWar - 1); ++n)
+      for(int n = 0; n < s.t[s.l - 1]; ++n)
       {
-        *(*(FP + liczWar - 1) + n) = *(*(Y 
-          + liczWar - 1) + n) * (1.0f - *(*(Y 
-          + liczWar - 1) + n));
-        const float ggg = *(*(X + p) + liczWejsc 
-          + n) - *(*(Y + liczWar - 1) + n);
-        *(*(D + liczWar - 1) + n) = ggg * *(*(FP 
-          + liczWar - 1) + n);
+        FP[s.l - 1][n] = Y[s.l - 1][n] * (1.0f - Y[s.l - 1][n]);
+        const float ggg = X[p][liczWejsc + n] - Y[s.l - 1][n];
+        D[s.l - 1][n] = ggg * FP[s.l - 1][n];
       }
       
-      for(l = liczWar - 2; l > -1; --l)
+      for(int l = s.l - 2; l > -1; --l)
       {
         int n;
         
         const int nasWar = l + 1;
         float SD = 0.0f;
-        for(n = 0; n < *(L + nasWar); ++n)
+        for(n = 0; n < s.t[nasWar]; ++n)
         {
           int i;
-          for(i = 0; i < *(I + nasWar); ++i)
-          {
-            SD = SD + *(*(D + nasWar) + n) 
-              * *(*(*(w + nasWar) + n) + i);
-          }
+          for(i = 0; i < s.in[nasWar]; ++i) SD = SD + D[nasWar][n] * s.w[nasWar][n][i];
         }
-        for(n = 0; n < *(L + l); ++n)
+        for(n = 0; n < s.t[l]; ++n)
         {
-          *(*(FP + l) + n) = *(*(Y + l) + n) 
-            * (1.0f - *(*(Y + l) + n));
-          *(*(D + l) + n) = SD * *(*(FP + l) + n);
+          FP[l][n] = Y[l][n] * (1.0f - Y[l][n]);
+          D[l][n] = SD * FP[l][n];
         }
       }
       
-      for(l = liczWar -1; l > 0; --l)
+      for(int l = s.l -1; l > 0; --l)
       {
         const int popWar = l - 1;
-        const int liczWejsc = *(I + l) - 1;
+        const int liczWejsc = s.in[l] - 1;
         int n;
-        for(n = 0; n < *(L + l); ++n)
+        for(n = 0; n < s.t[l]; ++n)
         {
           int i;
-          for(i = 0; i < liczWejsc; ++i)
-          {
-            *(*(*(w + l) + n) + i) = *(*(*(w + l) 
-              + n) + i) + a * *(*(D + l) + n) 
-              * *(*(Y + popWar) + i);
-          }
-          *(*(*(w + l) + n) + liczWejsc) = *(*(*(w 
-            + l) + n) + liczWejsc) + a * *(*(D 
-            + l) + n);
+          for(i = 0; i < liczWejsc; ++i) s.w[l][n][i] = s.w[l][n][i] + a * D[l][n] * Y[popWar][i];
+          s.w[l][n][liczWejsc] = s.w[l][n][liczWejsc] + a * D[l][n];
         }
       }
       
-      const int tem = *(I + 0) - 1;
-      for(n = 0; n < *(L + 0); ++n)
+      const int tem = s.in[0] - 1;
+      for(int n = 0; n < s.t[0]; ++n)
       {
-        *(*(*(w + 0) + n) + tem) = *(*(*(w + 0) 
-          + n) + liczWejsc) + a * *(*(D + 0) + n);
+        s.w[0][n][tem] = s.w[0][n][liczWejsc] + a * D[0][n];
         int i;
-        for(i = 0; i < tem; ++i)
-        {
-          *(*(*(w + 0) + n) + i) = *(*(*(w + 0) 
-            + n) + i) + a * *(*(D + 0) + n) 
-            * *(*(X + p) + i);
-        }
+        for(i = 0; i < tem; ++i) s.w[0][n][i] = s.w[0][n][i] + a * D[0][n] * X[p][i];
       }
     }
   }
   
-  for(l = 0; l < liczWar; ++l)
+  for(int i = 0; i < s.l; ++i)
   {
-    free(*(S + l));
-    free(*(Y + l));
-    free(*(FP + l));
-    free(*(D + l));
+    free(S[i]);
+    free(Y[i]);
+    free(FP[i]);
+    free(D[i]);
   }
   free(D);
   free(FP);
   free(Y);
   free(S);
-  
-  free(I);
-  
-  return w;
 }
 
-float** ssn_sprawdz(const int liczbaWarstw, 
-  const int *const warstwy, const int in, 
-  const float *const *const *const ssn, 
-  const int liczbaProbek, 
-  const float *const *const probki)
+float** ask_ssn(ssn s, const int liczbaProbek, const float *const *const probki)
 {
-  int *const I = malloc(liczbaWarstw * sizeof(int));
-  *(I + 0) = in + 1;
-  for(int w = 1; w < liczbaWarstw; ++w)
-  {
-    *(I + w) = *(warstwy + w - 1) + 1;
-  }
+  float * *const Y = new_tabt(s.l);
+  for(int i = 0; i < s.l; ++i) Y[i] = new_tabf(s.t[i]);
   
-  float * *const Y = malloc(liczbaWarstw 
-    * sizeof(float*));
-  for(int w = 0; w < liczbaWarstw; ++w)
-  {
-    *(Y + w) = malloc(*(warstwy + w) 
-      * sizeof(float));
-  }
-  
-  float * *const E = malloc(liczbaProbek 
-    * sizeof(float*));
-  const int liczWejsc = *(I + 0) - 1;
-  const int liczWyjsc = *(warstwy + liczbaWarstw 
-    - 1);
+  float * *const E = new_tabt(liczbaProbek);
+  const int liczWejsc = s.in[0] - 1;
+  const int liczWyjsc = s.t[s.l - 1];
   for(int p = 0; p < liczbaProbek; ++p)
   {
-    for(int n = 0; n < *(warstwy + 0); ++n)
+    for(int i = 0; i < s.t[0]; ++i)
     {
-      float s = *(*(*(ssn + 0) + n) + liczWejsc);
-      for(int i = 0; i < liczWejsc; ++i)
-      {
-        s = s + *(*(*(ssn + 0) + n) + i) 
-          * *(*(probki + p) + i);
-      }
-      *(*(Y + 0) + n) = (1.0f / (1.0f + exp(-s)));
+      float s2 = s.w[0][i][liczWejsc];
+      for(int j = 0; j < liczWejsc; ++j) s2 = s2 + s.w[0][i][j] * probki[p][j];
+      Y[0][i] = ssn_aktywacja(s2);
     }
     
-    for(int w = 1; w < liczbaWarstw; ++w)
+    for(int i = 1; i < s.l; ++i)
     {
-      const int popWar = w - 1;
-      const int liczWejsc = *(I + w) - 1;
-      for(int n = 0; n < *(warstwy + w); ++n)
+      const int popWar = i - 1;
+      const int liczWejsc = s.in[i] - 1;
+      for(int j = 0; j < s.t[i]; ++j)
       {
-        float s = *(*(*(ssn + w) + n) + liczWejsc);
-        for(int i = 0; i < liczWejsc; ++i)
-        {
-          s = s + *(*(*(ssn + w) + n) + i) * *(*(Y 
-            + popWar) + i);
-        }
-        *(*(Y + w) + n) = (1.0f / (1.0f + exp(-s)));
+        float s2 = s.w[i][j][liczWejsc];
+        for(int k = 0; k < liczWejsc; ++k) s2 = s2 + s.w[i][j][k] * Y[popWar][k];
+        Y[i][j] = ssn_aktywacja(s2);
       }
     }
     
-    *(E + p) = malloc(liczWyjsc * sizeof(float));
+    E[p] = new_tabf(liczWyjsc);
     printf("%d.", p + 1);
-    for(int n = 0; n < liczWyjsc; ++n)
+    for(int i = 0; i < liczWyjsc; ++i)
     {
-      *(*(E + p) + n) = *(*(Y + liczbaWarstw - 1) + n);
-      printf("  %f" ,*(*(E + p) + n));
+      E[p][i] = Y[s.l - 1][i];
+      printf("  %f" , E[p][i]);
     }
     printf("\n");
   }
   
-  for(int w = 0; w < liczbaWarstw; ++w)
-  {
-    free(*(Y + w));
-  }
-  
-  free(I);
+  for(int i = 0; i < s.l; ++i) free(Y[i]);
   
   return E;
 }
 
-void ssn_usun(const int liczbaWarstw, 
-  const int *const warstwy, float * * *const ssn)
+int* new_tabi(const int length)
 {
-  for(int w = 0; w < liczbaWarstw; ++w)
+  return malloc(sizeof(int) * length);
+}
+
+float* new_tabf(const int length)
+{
+  return malloc(sizeof(float) * length);
+}
+
+void* new_tabt(const int length)
+{
+  return malloc(sizeof(void*) * length);
+}
+
+float ssn_los()
+{
+	return (float)rand() / RAND_MAX * (0.9 - 0.1) + 0.1;
+}
+
+float ssn_aktywacja(const float suma)
+{
+  return 1.0f / (1.0f + exp(-suma));
+}
+
+ssn new_ssn(const int inputs, const int layers, int* const topology)
+{
+  ssn s = { .l = layers, .t = topology, .in = new_tabi(inputs), .w = new_tabt(layers) };
+  s.in[0] = inputs + 1;
+  int i;
+  for(i = 1; i < s.l; ++i) s.in[i] = s.t[i - 1] + 1;
+  
+  srand(time(0));
+  for(i = 0; i < s.l; ++i)
   {
-    for(int n = 0; n < *(warstwy + w); ++n)
+    const int liczNer = s.t[i];
+    s.w[i] = new_tabt(liczNer);
+    const int liczWejs = s.in[i];
+    int j;
+    for(j = 0; j < liczNer; ++j)
     {
-      free(*(*(ssn + w) + n));
+      s.w[i][j] = new_tabf(s.in[i]);
+      int k;
+      for(k = 0; k < liczWejs; ++k) s.w[i][j][k] = ssn_los();
     }
-    free(*(ssn + w));
   }
-  free(ssn);
+  
+  return s;
 }
 
-float los(const float min, const float max)
+void delete_ssn(ssn s)
 {
-	return (float)rand() / RAND_MAX * (max - min) 
-	  + min;
+  for(int i = 0; i < s.l; ++i)
+  {
+    for(int j = 0; j < s.t[i]; ++j) free(s.w[i][j]);
+    free(s.w[i]);
+  }
+  free(s.w);
+  
+  free(s.in);
 }
 
+const char* save_ssn(ssn s)
+{
+  char* buffer = malloc(sizeof(const char*) * 1024 * 1024);
+  int beg = 0;
+  
+  for(int i = 0; i < s.l; ++i)
+  {
+    const int liczNer = s.t[i];
+    const int liczWejs = s.in[i];
+    for(int j = 0; j < liczNer; ++j)
+    {
+      for(int k = 0; k < liczWejs; ++k)
+      {
+        beg += sprintf(buffer + beg, "%f\t", s.w[i][j][k]);
+      }
+      beg += sprintf(buffer + beg, "\n");
+    }
+    beg += sprintf(buffer + beg, "\n");
+  }
+  buffer[beg] = '\0';
+  
+  return buffer;
+}

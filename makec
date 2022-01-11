@@ -1,5 +1,5 @@
 #!/bin/bash
 
 wynik=$(echo $1 | sed -e "s/\..*//")
-gcc --std=c11 --pedantic -Wall -Wextra $1 -o $wynik lib/neuro.o -lm
+gcc --std=c11 --pedantic -Wall -Wextra $1 -o $wynik neuro.o -lm
 

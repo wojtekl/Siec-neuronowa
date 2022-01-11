@@ -6,19 +6,32 @@
 #include <math.h>
 #include <time.h>
 
-float*** neuro(const int * const L, const int in, 
-  const float * const * const X);
+int* new_tabi(const int length);
 
-float** ssn_sprawdz(const int liczbaWarstw, 
-  const int *const warstwy, const int in, 
-  const float *const *const *const ssn, 
-  const int liczbaProbek, 
-  const float *const *const probki);
+float* new_tabf(const int length);
 
-void ssn_usun(const int liczbaWarstw, 
-  const int *const warstwy, float * * *const ssn);
+void* new_tabt(const int length);
 
-float los(const float min, const float max);
+typedef struct ssn
+{
+  int l;
+  int* in;
+  int* t;
+  float*** w;
+} ssn;
+
+float ssn_los();
+
+float ssn_aktywacja(const float suma);
+
+ssn new_ssn(const int inputs, const int layers, int* const topology);
+
+void delete_ssn(ssn s);
+
+const char* save_ssn(ssn s);
+
+void teach_ssn(ssn s, const float * const * const X);
+
+float** ask_ssn(ssn s, const int liczbaProbek, const float *const *const probki);
 
 #endif
-

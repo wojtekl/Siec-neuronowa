@@ -16,55 +16,50 @@ int main(const int argc,
   fclose(file);
   
   const int liczbaProbek = 150;
-  float * *const probki = malloc(liczbaProbek 
-    * sizeof(float*));
-  for(int p = 0; p < liczbaProbek; ++p)
-  {
-    *(probki + p) = malloc(7 * sizeof(float));
-  }
+  float * *const probki = new_tabt(liczbaProbek);
+  for(int i = 0; i < liczbaProbek; ++i) probki[i] = new_tabf(7);
   
   const char *wiersz = strtok(bufor, ",\n");
   int p = 0;
   while(NULL != wiersz)
   {
-    *(*(probki + p) + 0) = atof(wiersz);
-    *(*(probki + p) + 1) = atof(strtok(NULL, ",\n"));
-    *(*(probki + p) + 2) = atof(strtok(NULL, ",\n"));
-    *(*(probki + p) + 3) = atof(strtok(NULL, ",\n"));
-    *(*(probki + p) + 4) = atof(strtok(NULL, ",\n"));
-    *(*(probki + p) + 5) = atof(strtok(NULL, ",\n"));
-    *(*(probki + p) + 6) = atof(strtok(NULL, ",\n"));
+    probki[p][0] = atof(wiersz);
+    probki[p][1] = atof(strtok(NULL, ",\n"));
+    probki[p][2] = atof(strtok(NULL, ",\n"));
+    probki[p][3] = atof(strtok(NULL, ",\n"));
+    probki[p][4] = atof(strtok(NULL, ",\n"));
+    probki[p][5] = atof(strtok(NULL, ",\n"));
+    probki[p][6] = atof(strtok(NULL, ",\n"));
     wiersz = strtok(NULL, ",\n");
     ++p;
   }
   
   free(bufor);
   
-  const int liczbaWarstw = 2;
-  int * const warstwy = malloc(liczbaWarstw 
-    * sizeof(int));
-  *(warstwy + 0) = 4;
-  *(warstwy + 1) = 3;
+  const int layers = 2;
   
-  float * * *const ssn = neuro(warstwy, 4, 
-    (const float *const *const)probki);
-  float * *const wynik = ssn_sprawdz(liczbaWarstw, 
-    warstwy, 4, 
-    (const float *const *const *const)ssn, 
-    liczbaProbek, (const float *const *const)probki);
+  int* const topology = new_tabi(layers);;
+  topology[0] = 4;
+  topology[1] = 3;
   
-  printf("wynik: %f\n", *(*(wynik + 148) + 0));
-  printf("wynik: %f\n", *(*(wynik + 148) + 1));
-  printf("wynik: %f\n", *(*(wynik + 148) + 2));
+  ssn s = new_ssn(4, layers, topology);
+  teach_ssn(s, (const float *const *const)probki);
+  float** const wynik = ask_ssn(s, liczbaProbek, (const float *const *const)probki);
+  const char* str = save_ssn(s);
+  FILE *f = fopen("siec.txt", "w+");
+  fprintf(f, str);
+  // fscanf
+  printf("%s\n\n", str);
+  delete_ssn(s);
   
-  ssn_usun(liczbaWarstw, warstwy, ssn);
+  free(topology);
   
-  for(int w = 0; w < liczbaWarstw; ++w)
-  {
-    free(*(wynik + w));
-  }
+  printf("wynik: %f\n", wynik[148][0]);
+  printf("wynik: %f\n", wynik[148][1]);
+  printf("wynik: %f\n", wynik[148][2]);
+  
+  for(int i = 0; i < layers; ++i) free(wynik[i]);
   free(wynik);
-  free(warstwy);
 	
 	/*lista *list = lista_nowa();
 	lista_dodaj(list, "jeden");
